@@ -10,7 +10,8 @@ const assets = [
     'css/styles.css',
     'css/materialize.min.css',
     'img/pkcontacts.png',
-    'https://fonts.googleapis.com/icon?family=Material+Icons'
+    'https://fonts.googleapis.com/icon?family=Material+Icons',
+    'https://fonts.gstatic.com/s/materialicons/v139/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2'
 ];
 
 
@@ -27,7 +28,15 @@ self.addEventListener('install', ev => {
 
 //activar evento
 self.addEventListener('activate', evt=>{
-    console.log('sw activado');
+    //console.log('sw activado');
+    evt.waitUntil(//borrar cache antiguas y actualizar por nuevas cuando se actualiza el codigo
+        caches.keys().then(keys =>{
+            //console.log(keys);
+            return Promise.all(keys
+                .filter(key => key !== cacheName)
+                .map(key =>caches.delete()));
+        })
+    )
 });
 
 // evento fetch 
