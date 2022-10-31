@@ -1,8 +1,10 @@
 //console.log('service worker......');
 
 const cacheName = "app-shell-rs";
+const dynamicCacheName = 'dynamic-cache-v1';
 const assets = [
     '/',
+    'pages/default.html',
     'index.html',
     'js/app.js',
     'js/common.js',
@@ -14,7 +16,16 @@ const assets = [
     'https://fonts.gstatic.com/s/materialicons/v139/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2'
 ];
 
-
+//cache size limit function
+const limitCacheSize = (name, size) =>{
+    caches.open(name).then(cache=>{
+        cache.keys().then(keys =>{
+            if(keys.length > size){
+                cache.delete(key[0]).then(limitCacheSize(name,size))
+            }
+        })
+    });
+}
 
 //install sw
 self.addEventListener('install', ev => {
@@ -44,7 +55,18 @@ self.addEventListener('fetch', evt =>{
     //console.log(evt);
     evt.respondWith(
         caches.match(evt.request).then(cacheRes => {
-            return cacheRes || evt.request;
+            return cacheRes || fetch(evt.request).then(fetchRes =>{
+                return caches.open(dynamicCacheName).then(cache => {
+                    cache.put(evt.request.url, fetchRes.clone())
+                    limitCacheSize(dynamicCacheName, 15);
+                    return fetchRes;
+                })
+            });
+        }).catch(() =>{
+            if(evt.request.url.indexOf('.hmlt') > 1){
+                return caches.match('pages/default.html');
+            }
+            
         })
     );
 });
