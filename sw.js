@@ -12,17 +12,17 @@ const assets = [
     'img/pkcontacts.png',
     'https://fonts.googleapis.com/icon?family=Material+Icons'
 ];
-caches.open(cacheName).then(cache =>{
-    cache.addAll(assets);
-})
-.catch(ev =>{
-    console.log('Error en cacheo', ev);
-});
+
 
 
 //install sw
 self.addEventListener('install', ev => {
-    console.log('sw instalado');
+    // console.log('sw instalado');
+    ev.waitUntil(
+        caches.open(cacheName).then(cache =>{
+            cache.addAll(assets);
+        })
+    );
 });
 
 //activar evento
@@ -32,6 +32,11 @@ self.addEventListener('activate', evt=>{
 
 // evento fetch 
 self.addEventListener('fetch', evt =>{
-    console.log(evt);
+    //console.log(evt);
+    evt.respondWith(
+        caches.match(evt.request).then(cacheRes => {
+            return cacheRes || evt.request;
+        })
+    );
 });
 
